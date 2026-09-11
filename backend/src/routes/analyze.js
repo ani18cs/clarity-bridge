@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
 const { uploadFields } = require('../middleware/validateUpload');
 const { optionalAuth } = require('../middleware/auth');
 const logger = require('../middleware/logger');
@@ -10,12 +11,28 @@ const { verifyClaims } = require('../services/factcheck.service');
 const { transcribeAudio } = require('../services/speech.service');
 const { uploadFile } = require('../services/storage.service');
 const { saveSubmission } = require('../services/firestore.service');
+const { translateAnalysisData } = require('../services/translation.service');
+
+// Rate limiting: 30 analysis requests per 15 minutes per user
+const analyzeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 1000 : 30,
+  keyGenerator: (req) => req.user?.uid || req.ip || 'anonymous',
+  validate: { default: false },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: 'RateLimitExceeded',
+    message: 'Too many analysis requests. Please wait a few moments before trying again.'
+  }
+});
 
 /**
  * POST /api/analyze
  * Main entry point for analyzing documents, audio, or text
  */
-router.post('/', optionalAuth, uploadFields, async (req, res, next) => {
+router.post('/', optionalAuth, analyzeLimiter, uploadFields, async (req, res, next) => {
   const startTime = Date.now();
   const userId = req.user?.uid || 'anonymous_user';
 
@@ -81,7 +98,7 @@ router.post('/', optionalAuth, uploadFields, async (req, res, next) => {
     });
 
     // 4. Authenticity & Fraud Risk Evaluation
-    const authenticity = evaluateAuthenticity({
+    const authenticity = await evaluateAuthenticity({
       extractedFields: geminiResult.extractedFields || {},
       documentType: geminiResult.documentType || 'general_letter',
       issuingAuthorityClaimed: geminiResult.issuingAuthorityClaimed || '',
@@ -103,8 +120,12 @@ router.post('/', optionalAuth, uploadFields, async (req, res, next) => {
       inputType,
       documentType: geminiResult.documentType || 'general_document',
       issuingAuthorityClaimed: geminiResult.issuingAuthorityClaimed || 'Unknown',
+      documentPurpose: geminiResult.documentPurpose || 'General document content and documentation.',
       extractedFields: geminiResult.extractedFields || {},
       summary: geminiResult.summary || 'Summary unavailable.',
+      legalImplications: geminiResult.legalImplications || [],
+      citizenRights: geminiResult.citizenRights || [],
+      jargonDemystified: geminiResult.jargonDemystified || [],
       actionPlan: geminiResult.actionPlan || { summary: '', steps: [], contacts: [] },
       authenticity,
       factChecks,
@@ -114,20 +135,25 @@ router.post('/', optionalAuth, uploadFields, async (req, res, next) => {
       totalProcessingTimeMs: Date.now() - startTime
     };
 
+    let finalPayload = resultPayload;
+    if (language && language !== 'en') {
+      finalPayload = translateAnalysisData(resultPayload, language);
+    }
+
     // 7. Persist to Firestore
-    await saveSubmission(userId, resultPayload);
+    await saveSubmission(userId, finalPayload);
 
     logger.pipelineStage('Pipeline_Completed_Success', {
       submissionId,
       userId,
-      documentType: resultPayload.documentType,
+      documentType: finalPayload.documentType,
       verdict: authenticity.verdict,
-      totalDurationMs: resultPayload.totalProcessingTimeMs
+      totalDurationMs: finalPayload.totalProcessingTimeMs
     });
 
     return res.status(200).json({
       success: true,
-      data: resultPayload
+      data: finalPayload
     });
   } catch (err) {
     logger.error('Pipeline Execution Failed', { error: err.message, stack: err.stack });

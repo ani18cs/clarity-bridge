@@ -1,100 +1,102 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FileSearch, 
-  ShieldCheck, 
-  CheckCircle2, 
-  Sparkles,
-  Loader2
-} from 'lucide-react';
+import { Loader2, Sparkles, Shield, CheckCircle2 } from 'lucide-react';
 
-const STAGES = [
-  { id: 1, text: 'Ingesting & OCR scanning document with Gemini 2.5 multimodal...', icon: FileSearch },
-  { id: 2, text: 'Executing 4-tier authenticity heuristic & scam pattern scan...', icon: ShieldCheck },
-  { id: 3, text: 'Fact-checking key claims and statutory citations against public records...', icon: CheckCircle2 },
-  { id: 4, text: 'Formulating prioritized action plan, deadlines, and verified contacts...', icon: Sparkles },
+const STATUS_STAGES = [
+  { text: 'Reading document and verifying image clarity…', icon: '📄' },
+  { text: 'Extracting grounded dates, amounts, and reference IDs…', icon: '🔍' },
+  { text: 'Cross-checking sender against official registries…', icon: '🏛️' },
+  { text: 'Running fraud heuristics and DIN/GSTIN validation…', icon: '🛡️' },
+  { text: 'Synthesizing plain-language summary & action plan…', icon: '✨' }
 ];
 
 export default function ProcessingView() {
-  const [currentStageIndex, setCurrentStageIndex] = useState(0);
+  const [stageIndex, setStageIndex] = useState(0);
+  const [progress, setProgress] = useState(12);
 
   useEffect(() => {
-    const timer1 = setTimeout(() => setCurrentStageIndex(1), 1200);
-    const timer2 = setTimeout(() => setCurrentStageIndex(2), 2600);
-    const timer3 = setTimeout(() => setCurrentStageIndex(3), 4000);
+    const stageInterval = setInterval(() => {
+      setStageIndex((prev) => (prev + 1) % STATUS_STAGES.length);
+    }, 2200);
+
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev < 92) {
+          return prev + Math.floor(Math.random() * 6) + 2;
+        }
+        return prev;
+      });
+    }, 450);
 
     return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
+      clearInterval(stageInterval);
+      clearInterval(progressInterval);
     };
   }, []);
 
-  const activeStage = STAGES[currentStageIndex];
+  const currentStage = STATUS_STAGES[stageIndex];
 
   return (
-    <div className="w-full max-w-2xl mx-auto py-12 px-4 text-center">
+    <div className="bg-white border-3 border-ink rounded-neo-lg shadow-neo overflow-hidden max-w-2xl mx-auto text-center animate-fadeIn">
       
-      {/* Animated Spinner & Brand Beacon */}
-      <div className="relative w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-        <div className="absolute inset-0 rounded-full bg-brand-200/50 animate-ping opacity-75" />
-        <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-tr from-brand-700 via-brand-600 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-brand-500/30">
-          <Loader2 className="w-10 h-10 animate-spin" aria-hidden="true" />
+      {/* Topbar */}
+      <div className="flex items-center justify-between px-5 py-3.5 border-b-3 border-ink bg-periwinkle-pale text-left">
+        <div className="flex items-center gap-2">
+          <span className="w-3.5 h-3.5 rounded-full border-2 border-ink bg-coral" aria-hidden="true" />
+          <span className="w-3.5 h-3.5 rounded-full border-2 border-ink bg-marigold" aria-hidden="true" />
+          <span className="w-3.5 h-3.5 rounded-full border-2 border-ink bg-grass" aria-hidden="true" />
+          <span className="ml-2 font-bold text-xs sm:text-sm text-ink">ClarityBridge — Multimodal Analysis Engine</span>
         </div>
+        <span className="text-[11px] font-black uppercase text-periwinkle-deep px-2.5 py-0.5 rounded-full bg-white border border-ink/30">
+          Stage {stageIndex + 1} of {STATUS_STAGES.length}
+        </span>
       </div>
 
-      {/* Screen Reader Live Region */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {activeStage.text}
+      {/* Body */}
+      <div className="p-8 sm:p-12 space-y-6">
+        
+        {/* Animated Icon Container */}
+        <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-marigold/30 animate-ping opacity-75" />
+          <div 
+            className="relative w-20 h-20 rounded-full bg-marigold border-3 border-ink flex items-center justify-center text-4xl shadow-neo-sm transition-transform duration-300 transform scale-105"
+            aria-hidden="true"
+          >
+            {currentStage.icon}
+          </div>
+        </div>
+
+        {/* Dynamic Status Text */}
+        <div className="space-y-1.5 min-h-[70px]">
+          <h2 className="font-display font-extrabold text-xl sm:text-2xl text-ink leading-snug transition-all">
+            {currentStage.text}
+          </h2>
+          <p className="text-xs sm:text-sm text-[#454264] font-medium flex items-center justify-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-periwinkle animate-spin" />
+            <span>Gemini Multimodal AI • Grounded Zero-Guess Verification</span>
+          </p>
+        </div>
+
+        {/* Progress Track */}
+        <div className="space-y-2">
+          <div className="w-full max-w-sm mx-auto h-4 rounded-full border-2.5 border-ink bg-slate-100 overflow-hidden shadow-inner p-0.5">
+            <div 
+              className="h-full bg-gradient-to-r from-periwinkle to-grass rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${Math.min(progress, 95)}%` }}
+            />
+          </div>
+          <div className="text-[11px] font-extrabold text-ink/70">
+            {Math.min(progress, 95)}% Processing Complete
+          </div>
+        </div>
+
+        {/* Reassurance Footer */}
+        <div className="p-3 bg-periwinkle-pale rounded-xl border-1.5 border-ink/20 max-w-md mx-auto text-xs text-[#5b5878] font-medium flex items-center justify-center gap-2">
+          <Shield className="w-4 h-4 text-periwinkle-deep flex-shrink-0" />
+          <span>DPDP Act 2023 Compliant • Ephemeral In-Memory Processing</span>
+        </div>
+
       </div>
 
-      {/* Visual Pipeline Stage Header */}
-      <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">
-        Analyzing Your Document
-      </h2>
-      <p className="text-base font-medium text-brand-700 min-h-[1.75rem] transition-all">
-        {activeStage.text}
-      </p>
-
-      {/* Stage Tracker Cards */}
-      <div className="mt-8 space-y-3 text-left max-w-md mx-auto">
-        {STAGES.map((stage, idx) => {
-          const Icon = stage.icon;
-          const isDone = idx < currentStageIndex;
-          const isCurrent = idx === currentStageIndex;
-
-          return (
-            <div
-              key={stage.id}
-              className={`flex items-center space-x-3 p-3 rounded-xl border transition-all ${
-                isDone 
-                  ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                  : isCurrent 
-                  ? 'bg-white border-brand-400 shadow-md shadow-brand-500/10 text-slate-900 scale-[1.02]' 
-                  : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'
-              }`}
-            >
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                isDone ? 'bg-emerald-600 text-white' : isCurrent ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-500'
-              }`}>
-                {isDone ? (
-                  <CheckCircle2 className="w-4 h-4" />
-                ) : isCurrent ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <span className="text-xs font-bold">{stage.id}</span>
-                )}
-              </div>
-              <span className="text-xs sm:text-sm font-semibold truncate">
-                {stage.text.split('...')[0]}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      <p className="text-xs text-slate-400 mt-8">
-        Privacy safeguard active: Document text is never logged or exposed.
-      </p>
     </div>
   );
 }

@@ -25,6 +25,7 @@ temp/
 *.pdf
 *.wav
 *.mp3
+*.traineddata
 
 # Logs
 logs/

@@ -1,58 +1,72 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
-  UploadCloud, 
   Camera, 
   Mic, 
   MicOff, 
   FileText, 
-  Image as ImageIcon, 
-  FileCheck, 
+  UploadCloud, 
   X, 
-  AlertCircle,
-  Play,
-  Square,
+  Square, 
+  ArrowRight,
   Sparkles,
-  ArrowRight
+  Globe
 } from 'lucide-react';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const DEMO_SAMPLES = [
   {
-    name: '🏠 Eviction Notice (Official)',
-    type: 'text',
-    content: `METRO HOUSING COURT & MUNICIPAL HOUSING AUTHORITY
-100 Civic Center Square, Room 204
-Notice Date: September 08, 2026
-Case No: EV-2026-8819
+    name: '📄 Income Tax Notice u/s 156 (Authentic)',
+    content: `GOVERNMENT OF INDIA - INCOME TAX DEPARTMENT
+Office of the Income Tax Officer, Ward 12(3), New Delhi
+Notice Date: 12/08/2026
+Document Identification Number (DIN): ITBA/AST/S/156/2026-27/104829104859
+PAN: ABCDE1234F | Assessment Year: 2025-26
 
-FOURTEEN (14) DAY NOTICE TO CURE OR VACATE
-To: Jane Doe, 742 Evergreen Terrace, Apt 4B
+NOTICE OF DEMAND UNDER SECTION 156 OF THE INCOME TAX ACT, 1961
+To: Shri Rajesh Sharma, 42 Barakhamba Road, Connaught Place, New Delhi
 
-TAKE NOTICE that you are indebted to Metro Housing Management in the amount of $1,200.00 for past-due rent. You are required under State Housing Code § 504 to pay this balance or submit an application for emergency housing mediation within 14 calendar days (by September 22, 2026).
-
-Failure to comply will result in summary court eviction proceedings.
-Housing Court Clerk Contact: (555) 234-5678 | clerk@metro-housing.gov | https://metrohousing.gov`
+This is to notify that for the Assessment Year 2025-26, a sum of Rs. 18,450 (Rupees Eighteen Thousand Four Hundred Fifty only) has been determined to be payable by you pursuant to assessment order passed under section 143(3).
+You are required to pay the said demand within thirty (30) days of the service of this notice via the official e-Filing portal at https://eportal.incometax.gov.in.
+In case of grievance, file a rectification request u/s 154 or appeal before CIT(Appeals).
+Contact: Incometax Helpdesk 1800-180-1961 | efilingwebmanager@incometax.gov.in`
   },
   {
-    name: '🚨 IRS Scam Text (Fraudulent)',
-    type: 'text',
-    content: `INTERNAL REVENUE POLICE DEPARTMENT - FINAL ARREST NOTICE
-Dear Citizen / Resident,
-A federal warrant CASE-9921 has been issued for your immediate arrest and asset seizure within 2 hours due to unpaid tax liabilities of $950.00. 
-DO NOT CONTACT A LAWYER OR LOCAL POLICE.
-To cancel this arrest warrant immediately, you must purchase $950 in Apple Gift Cards or deposit Bitcoin to our emergency settlement wallet. Call official agent immediately at +1-800-555-0199 or email support@urgent-gov-clearance.net.`
+    name: '🚨 Fake ITD Threat (Fraudulent)',
+    content: `CENTRAL INCOME TAX RECOVERY POLICE FORCE - FINAL ARREST SUMMONS
+URGENT NOTICE - CASE REF: ITD-DELHI-ARREST-9921
+Dear Taxpayer,
+Your PAN ABCDE1234F is implicated in money laundering and tax default of Rs 48,500. A non-bailable arrest warrant has been issued by Special Tax Court.
+Police team will arrive at your registered residence within 2 hours.
+DO NOT CONTACT LAWYER OR LOCAL POLICE.
+To cancel this immediate arrest warrant, you must immediately purchase Rs 48,500 in Google Play / Apple Gift Cards or transfer to UPI ID: tax-settlement-officer@upi.
+Call Emergency Settlement Inspector at +91-9876543210 immediately.`
   },
   {
-    name: '💡 Utility Shutoff Notice (Official)',
-    type: 'text',
-    content: `CITY POWER & WATER UTILITIES
-P.O. Box 4891, Municipal District
-Notice of Intent to Disconnect Utility Service
-Account: #994-1823-01
-Amount Overdue: $184.50 | Disconnect Date: October 05, 2026
+    name: '⚖️ Cheque Bounce Notice u/s 138 (Legal)',
+    content: `ADVOCATE ARUN MEHTA & ASSOCIATES
+High Court Chambers, Fort, Mumbai - 400001
+Date: 15/07/2026 | Ref No: AM/LEG/2026/884
 
-Dear Customer,
-Your electrical utility service is scheduled for disconnection on October 05, 2026 due to an unpaid balance of $184.50. If you are experiencing financial hardship, you may qualify for the Low-Income Home Energy Assistance Program (LIHEAP) or an interest-free payment arrangement.
-Please call (555) 345-6789 or visit https://cityutilities.gov/assistance.`
+LEGAL NOTICE UNDER SECTION 138 OF THE NEGOTIABLE INSTRUMENTS ACT, 1881
+To: Prime Solutions Pvt Ltd, Andheri East, Mumbai
+
+Under instructions from our client M/s Zenith Enterprises, we hereby give you notice:
+Cheque No. 492011 dated 01/07/2026 drawn on HDFC Bank for Rs. 2,50,000/- was returned unpaid by the bank with the memo 'Funds Insufficient' on 08/07/2026.
+You are hereby called upon to pay the entire amount of Rs. 2,50,000 within fifteen (15) days of receipt of this notice, failing which our client shall initiate criminal prosecution against you under Section 138 of the Negotiable Instruments Act without further reference.
+Advocate Contact: +91-22-22661234 | legal@mehta-associates.in`
+  },
+  {
+    name: '💡 State Electricity Notice (Official)',
+    content: `MAHARASHTRA STATE ELECTRICITY DISTRIBUTION CO. LTD. (MSEDCL)
+Sub-Division Office, Pune Urban Circle
+Consumer No: 019284729102 | Bill Date: 05/09/2026
+
+DISCONNECTION NOTICE UNDER SECTION 56(1) OF ELECTRICITY ACT, 2003
+Dear Consumer,
+Your electricity bill for the billing cycle of August 2026 remains unpaid in the amount of Rs. 3,420.00.
+Please take notice that power supply to your premises will be disconnected after fifteen (15) days from this notice if payment is not credited.
+You can pay online at https://www.mahadiscom.in or via the Mahavitaran Mobile App.
+Customer Care Helpline: 1912 / 1800-233-3435 | customercare@mahadiscom.in`
   }
 ];
 
@@ -60,12 +74,13 @@ export default function UploadZone({
   onAnalyze, 
   isAnalyzing, 
   currentLanguage, 
-  onLanguageChange 
+  onLanguageChange,
+  initialMode = 'upload'
 }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [textInput, setTextInput] = useState('');
-  const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'text' | 'camera' | 'voice'
+  const [activeTab, setActiveTab] = useState(initialMode); // 'upload' | 'camera' | 'voice' | 'text'
   const [isDragOver, setIsDragOver] = useState(false);
   
   // Voice Recording state
@@ -81,6 +96,13 @@ export default function UploadZone({
   const streamRef = useRef(null);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (initialMode && initialMode !== activeTab) {
+      setActiveTab(initialMode);
+      if (initialMode === 'camera') startCamera();
+    }
+  }, [initialMode]);
 
   // File Handlers
   const handleFileChange = (file) => {
@@ -229,255 +251,247 @@ export default function UploadZone({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
+    <div className="w-full space-y-8" id="demo">
       
-      {/* Intro Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Translate Confusing Documents Into <span className="text-brand-600">Clear Action</span>
-        </h1>
-        <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
-          Upload any official letter, bill, eviction notice, or suspicious message. Gemini extracts the facts, checks authenticity, and creates a step-by-step action plan.
-        </p>
-      </div>
-
-      {/* Main Interactive Card */}
-      <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden transition-all">
+      {/* App Card Shell with Mockup Style */}
+      <div className="bg-white border-3 border-ink rounded-neo-lg shadow-neo overflow-hidden transition-all">
         
-        {/* Input Mode Tabs */}
-        <div className="flex border-b border-slate-200 bg-slate-50/70 p-1.5 gap-1.5 sm:gap-2">
-          
-          <button
-            type="button"
-            onClick={() => { setActiveTab('upload'); stopCamera(); }}
-            className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === 'upload' 
-                ? 'bg-white text-brand-700 shadow-sm border border-slate-200/80' 
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-            }`}
-          >
-            <UploadCloud className="w-4 h-4 text-brand-600" aria-hidden="true" />
-            <span>Upload File</span>
-          </button>
+        {/* Retro macOS / Playful Topbar */}
+        <div className="flex flex-wrap items-center justify-between px-5 py-3 border-b-3 border-ink bg-periwinkle-pale gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-ink bg-coral" aria-hidden="true" />
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-ink bg-marigold" aria-hidden="true" />
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-ink bg-grass" aria-hidden="true" />
+            <span className="ml-2 font-bold text-xs sm:text-sm text-ink">ClarityBridge — Universal Document Ingestion</span>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => { setActiveTab('camera'); startCamera(); }}
-            className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === 'camera' 
-                ? 'bg-white text-brand-700 shadow-sm border border-slate-200/80' 
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-            }`}
-          >
-            <Camera className="w-4 h-4 text-teal-600" aria-hidden="true" />
-            <span>Take Photo</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { setActiveTab('voice'); stopCamera(); }}
-            className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === 'voice' 
-                ? 'bg-white text-brand-700 shadow-sm border border-slate-200/80' 
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-            }`}
-          >
-            <Mic className="w-4 h-4 text-indigo-600" aria-hidden="true" />
-            <span>Voice Input</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { setActiveTab('text'); stopCamera(); }}
-            className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === 'text' 
-                ? 'bg-white text-brand-700 shadow-sm border border-slate-200/80' 
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-            }`}
-          >
-            <FileText className="w-4 h-4 text-amber-600" aria-hidden="true" />
-            <span>Paste Text</span>
-          </button>
-
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-ink/80 hidden sm:inline">Response Language:</span>
+            <LanguageSwitcher
+              currentLanguage={currentLanguage}
+              onLanguageChange={onLanguageChange}
+            />
+          </div>
         </div>
 
-        {/* Tab Content Body */}
-        <div className="p-6 sm:p-8">
+        {/* Card Body */}
+        <div className="p-6 sm:p-8 md:p-10 space-y-6">
+          
+          <div>
+            <h3 className="font-display font-extrabold text-2xl sm:text-3xl text-ink mb-1">
+              What have you got?
+            </h3>
+            <p className="text-sm sm:text-base text-[#454264] font-medium">
+              Drop it in, snap it, or just talk — whatever's easiest.
+            </p>
+          </div>
 
-          {/* 1. File Upload Dropzone */}
-          {activeTab === 'upload' && (
-            <div>
-              {!selectedFile ? (
-                <div
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all ${
-                    isDragOver 
-                      ? 'border-brand-500 bg-brand-50/50 scale-[0.99]' 
-                      : 'border-slate-300 hover:border-brand-400 bg-slate-50/40 hover:bg-brand-50/20'
-                  }`}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && fileInputRef.current?.click()}
-                  aria-label="Upload document image or PDF file"
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,application/pdf"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
-                  />
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-700 shadow-inner">
-                    <UploadCloud className="w-8 h-8" aria-hidden="true" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-800">
-                    Click to browse or drag & drop document
-                  </h3>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Supports Photos (JPEG, PNG, WEBP) & PDF documents (up to 15MB)
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-brand-50/40 border border-brand-200 rounded-2xl p-4 sm:p-6 flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    {filePreview ? (
-                      <img src={filePreview} alt="Document thumbnail preview" className="w-16 h-16 object-cover rounded-xl border border-brand-300 shadow-sm" />
-                    ) : (
-                      <div className="w-16 h-16 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-sm">
-                        PDF
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold text-slate-900 truncate max-w-xs sm:max-w-md">{selectedFile.name}</p>
-                      <p className="text-xs text-slate-500">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready for AI Analysis</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={clearFile}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                    aria-label="Remove attached file"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+          {/* 1. File Upload Dropzone (Primary) */}
+          <div
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            onClick={() => {
+              if (!selectedFile) fileInputRef.current?.click();
+            }}
+            className={`border-3 border-dashed rounded-2xl p-8 sm:p-10 text-center transition-all ${
+              selectedFile
+                ? 'border-grass bg-card-grass'
+                : isDragOver
+                ? 'border-periwinkle bg-periwinkle-pale scale-[0.99]'
+                : 'border-periwinkle-deep/80 bg-periwinkle-pale/70 hover:bg-periwinkle-pale cursor-pointer'
+            }`}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && fileInputRef.current?.click()}
+            aria-label="Upload document image or PDF file"
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,application/pdf"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
+            />
 
-          {/* 2. Live Camera Mode */}
-          {activeTab === 'camera' && (
-            <div className="space-y-4 text-center">
-              {isCameraActive ? (
-                <div className="relative rounded-2xl overflow-hidden bg-black aspect-video max-w-xl mx-auto shadow-md">
-                  <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-                  <div className="absolute bottom-4 inset-x-0 flex justify-center space-x-4">
-                    <button
-                      type="button"
-                      onClick={capturePhoto}
-                      className="px-6 py-2.5 rounded-full bg-white text-slate-900 font-bold shadow-lg hover:bg-slate-100 flex items-center space-x-2"
-                    >
-                      <Camera className="w-5 h-5 text-brand-600" />
-                      <span>Capture Page</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={stopCamera}
-                      className="px-4 py-2.5 rounded-full bg-slate-800/80 text-white font-medium hover:bg-slate-700"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200">
-                  <Camera className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                  <p className="text-sm text-slate-600 mb-4">Camera is closed.</p>
-                  <button
-                    onClick={startCamera}
-                    className="px-5 py-2 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700"
-                  >
-                    Open Camera
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* 3. Voice Recording Mode */}
-          {activeTab === 'voice' && (
-            <div className="text-center py-6 space-y-4">
-              <div className="max-w-md mx-auto">
-                <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center transition-all ${
-                  isRecording 
-                    ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/30' 
-                    : 'bg-brand-100 text-brand-700'
-                }`}>
-                  {isRecording ? <Mic className="w-12 h-12" /> : <MicOff className="w-10 h-10 text-slate-400" />}
-                </div>
-
-                <p className="mt-4 text-base font-semibold text-slate-800">
-                  {isRecording ? 'Listening... Speak your questions about the notice' : 'Record a voice description or read the notice aloud'}
+            {!selectedFile ? (
+              <div>
+                <div className="text-4xl sm:text-5xl mb-3" aria-hidden="true">📥</div>
+                <p className="font-bold text-base sm:text-lg text-periwinkle-deep">
+                  Drag a photo or PDF here, or choose an option below
                 </p>
-
-                <div className="mt-4 flex justify-center space-x-3">
-                  {!isRecording ? (
-                    <button
-                      type="button"
-                      onClick={startRecording}
-                      className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold flex items-center space-x-2 shadow-sm"
-                    >
-                      <Mic className="w-4 h-4" />
-                      <span>Start Voice Recording</span>
-                    </button>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
+                  Supports multi-page PDFs, photos (JPEG, PNG), Indian tax notices, bills, court summons (up to 15MB)
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4 text-left">
+                  {filePreview ? (
+                    <img src={filePreview} alt="Document thumbnail preview" className="w-16 h-16 object-cover rounded-xl border-2 border-ink shadow-neo-xs" />
                   ) : (
-                    <button
-                      type="button"
-                      onClick={stopRecording}
-                      className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center space-x-2 shadow-sm"
-                    >
-                      <Square className="w-4 h-4 fill-white" />
-                      <span>Finish Recording</span>
-                    </button>
+                    <div className="w-16 h-16 rounded-xl bg-periwinkle text-white border-2 border-ink flex items-center justify-center font-display font-extrabold text-lg shadow-neo-xs">
+                      PDF
+                    </div>
                   )}
-                </div>
-
-                {audioUrl && (
-                  <div className="mt-4 p-3 bg-slate-100 rounded-xl flex items-center justify-between">
-                    <audio src={audioUrl} controls className="h-8 max-w-[260px]" />
-                    <button onClick={clearAudio} className="text-xs text-red-600 font-semibold hover:underline">
-                      Delete
-                    </button>
+                  <div>
+                    <p className="font-bold text-ink text-base truncate max-w-xs sm:max-w-md">{selectedFile.name}</p>
+                    <p className="text-xs text-slate-600 font-semibold mt-0.5">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready for Grounded AI Analysis</p>
                   </div>
-                )}
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); clearFile(); }}
+                  className="p-2 rounded-xl bg-white hover:bg-coral-pale text-ink border-2 border-ink shadow-neo-xs transition-colors"
+                  aria-label="Remove attached file"
+                >
+                  <X className="w-5 h-5 text-coral" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* 4 Mode Option Tiles from Mockup */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            
+            <button
+              type="button"
+              onClick={() => { setActiveTab('camera'); startCamera(); }}
+              className={`border-2.5 border-dashed border-ink rounded-2xl p-4 text-center font-bold text-sm transition-all ${
+                activeTab === 'camera' ? 'bg-card-marigold -translate-y-1 shadow-neo-xs' : 'bg-white hover:bg-periwinkle-pale'
+              }`}
+            >
+              <span className="text-2xl block mb-1.5" aria-hidden="true">📷</span>
+              <span>Take a photo</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setActiveTab('voice'); stopCamera(); }}
+              className={`border-2.5 border-dashed border-ink rounded-2xl p-4 text-center font-bold text-sm transition-all ${
+                activeTab === 'voice' ? 'bg-card-marigold -translate-y-1 shadow-neo-xs' : 'bg-white hover:bg-periwinkle-pale'
+              }`}
+            >
+              <span className="text-2xl block mb-1.5" aria-hidden="true">🎙️</span>
+              <span>Record my voice</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setActiveTab('upload'); stopCamera(); fileInputRef.current?.click(); }}
+              className={`border-2.5 border-dashed border-ink rounded-2xl p-4 text-center font-bold text-sm transition-all ${
+                activeTab === 'upload' ? 'bg-card-marigold -translate-y-1 shadow-neo-xs' : 'bg-white hover:bg-periwinkle-pale'
+              }`}
+            >
+              <span className="text-2xl block mb-1.5" aria-hidden="true">📎</span>
+              <span>Upload a file</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setActiveTab('text'); stopCamera(); }}
+              className={`border-2.5 border-dashed border-ink rounded-2xl p-4 text-center font-bold text-sm transition-all ${
+                activeTab === 'text' ? 'bg-card-marigold -translate-y-1 shadow-neo-xs' : 'bg-white hover:bg-periwinkle-pale'
+              }`}
+            >
+              <span className="text-2xl block mb-1.5" aria-hidden="true">⌨️</span>
+              <span>Paste text</span>
+            </button>
+
+          </div>
+
+          {/* Camera View Mode */}
+          {activeTab === 'camera' && isCameraActive && (
+            <div className="rounded-2xl border-3 border-ink overflow-hidden bg-black aspect-video max-w-lg mx-auto relative shadow-neo">
+              <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+              <div className="absolute bottom-4 inset-x-0 flex justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={capturePhoto}
+                  className="btn-neo btn-primary-neo btn-neo-sm"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Capture Page</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={stopCamera}
+                  className="btn-neo btn-ghost-neo btn-neo-sm"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           )}
 
-          {/* 4. Text Paste Mode */}
+          {/* Voice View Mode */}
+          {activeTab === 'voice' && (
+            <div className="bg-periwinkle-pale border-2.5 border-ink rounded-2xl p-6 text-center space-y-4">
+              <div className={`w-20 h-20 mx-auto rounded-full border-3 border-ink flex items-center justify-center transition-all ${
+                isRecording ? 'bg-coral text-white animate-bounce-custom' : 'bg-marigold text-ink shadow-neo-sm'
+              }`}>
+                {isRecording ? <Mic className="w-10 h-10" /> : <MicOff className="w-10 h-10" />}
+              </div>
+
+              <p className="font-bold text-ink text-base">
+                {isRecording ? 'Listening... Explain the letter or read details' : 'Record a voice description or read the notice aloud'}
+              </p>
+
+              <div className="flex justify-center gap-3">
+                {!isRecording ? (
+                  <button
+                    type="button"
+                    onClick={startRecording}
+                    className="btn-neo btn-primary-neo btn-neo-sm"
+                  >
+                    <Mic className="w-4 h-4" />
+                    <span>Start Voice Recording</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={stopRecording}
+                    className="btn-neo btn-coral-neo btn-neo-sm"
+                  >
+                    <Square className="w-4 h-4 fill-white" />
+                    <span>Finish Recording</span>
+                  </button>
+                )}
+              </div>
+
+              {audioUrl && (
+                <div className="mt-4 p-3 bg-white rounded-xl border-2 border-ink flex items-center justify-between max-w-sm mx-auto shadow-neo-xs">
+                  <audio src={audioUrl} controls className="h-8 max-w-[240px]" />
+                  <button type="button" onClick={clearAudio} className="text-xs font-bold text-coral hover:underline">
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Text View Mode */}
           {activeTab === 'text' && (
             <div>
-              <label htmlFor="pasted-text" className="block text-sm font-semibold text-slate-800 mb-2">
-                Paste message or document text below:
+              <label htmlFor="pasted-text" className="block text-sm font-bold text-ink mb-2">
+                Paste message or notice text below:
               </label>
               <textarea
                 id="pasted-text"
                 rows={6}
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
-                placeholder="Paste the text of an email, letter, court summons, SMS, or notice here..."
-                className="w-full p-4 rounded-xl border border-slate-300 bg-slate-50/50 text-slate-900 text-sm focus:bg-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-600"
+                placeholder="Paste the text of an IT notice, legal demand, electricity bill, GST notice, SMS, or letter here..."
+                className="w-full p-4 rounded-xl border-2 border-ink bg-white text-ink text-sm font-medium focus:bg-white focus:ring-0"
               />
             </div>
           )}
 
-          {/* Optional context box for upload/voice tabs */}
+          {/* Extra note context box for non-text tabs */}
           {activeTab !== 'text' && (
-            <div className="mt-4">
-              <label htmlFor="extra-context" className="block text-xs font-semibold text-slate-600 mb-1">
+            <div>
+              <label htmlFor="extra-context" className="block text-xs font-bold text-[#454264] mb-1">
                 Optional note or question:
               </label>
               <input
@@ -485,27 +499,26 @@ export default function UploadZone({
                 type="text"
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
-                placeholder="e.g., 'What is my actual deadline?' or 'Is this court real?'"
-                className="w-full px-3.5 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 focus-visible:ring-2 focus-visible:ring-brand-600"
+                placeholder="e.g., 'What is my actual deadline under Section 156?' or 'Is this DIN valid?'"
+                className="w-full px-4 py-2.5 rounded-xl border-2 border-ink bg-white text-sm text-ink font-medium"
               />
             </div>
           )}
 
-          {/* Primary Submit Button */}
-          <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            
-            <div className="text-xs text-slate-500 flex items-center space-x-1.5">
-              <Sparkles className="w-4 h-4 text-brand-500 flex-shrink-0" />
-              <span>Multi-tier analysis: Gemini 2.5 + Fraud Heuristic + Web Verification</span>
+          {/* Submit Action Bar */}
+          <div className="pt-4 border-t-2 border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-periwinkle" />
+              <span>Multi-tier analysis: Gemini 2.5 Grounded Extraction + DIN/GST Verification</span>
             </div>
 
             <button
               type="button"
               onClick={handleSubmit}
               disabled={isAnalyzing}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-brand-700 via-brand-600 to-teal-500 hover:from-brand-800 hover:to-teal-600 text-white font-bold text-base shadow-md shadow-brand-600/25 flex items-center justify-center space-x-2 transition-all disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+              className="btn-neo btn-primary-neo w-full sm:w-auto text-base px-8 py-3.5"
             >
-              <span>{isAnalyzing ? 'Analyzing Document...' : 'Analyze Document & Build Plan'}</span>
+              <span>{isAnalyzing ? 'Analyzing Document…' : 'Analyze it →'}</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
@@ -513,21 +526,21 @@ export default function UploadZone({
         </div>
       </div>
 
-      {/* Instant Quick-Test Demo Samples */}
-      <div className="bg-slate-100/80 rounded-2xl p-4 sm:p-5 border border-slate-200">
-        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+      {/* 1-Click Test Samples */}
+      <div className="bg-card-marigold/60 border-2.5 border-ink rounded-2xl p-5 shadow-neo-sm">
+        <p className="font-display font-extrabold text-sm text-ink uppercase tracking-wider mb-3">
           Or try a 1-Click test document:
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {DEMO_SAMPLES.map((sample, idx) => (
             <button
               key={idx}
               type="button"
               onClick={() => loadSample(sample)}
-              className="text-left p-2.5 rounded-xl bg-white hover:bg-brand-50/50 border border-slate-200/80 hover:border-brand-300 transition-all text-xs font-medium text-slate-800 hover:text-brand-900 shadow-2xs"
+              className="text-left p-3 rounded-xl bg-white border-2 border-ink hover:bg-periwinkle-pale transition-all shadow-neo-xs hover:-translate-y-0.5"
             >
-              <div className="font-semibold">{sample.name}</div>
-              <div className="text-[11px] text-slate-500 truncate mt-0.5">{sample.content.substring(0, 45)}...</div>
+              <div className="font-bold text-xs text-ink truncate">{sample.name}</div>
+              <div className="text-[11px] text-slate-600 truncate mt-0.5 font-medium">{sample.content.substring(0, 42)}...</div>
             </button>
           ))}
         </div>

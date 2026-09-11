@@ -7,30 +7,49 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
+        ink: '#1C1B2E',
+        bg: '#F5F3FF',
+        periwinkle: {
+          DEFAULT: '#5B5FEF',
+          deep: '#3A3DB0',
+          pale: '#E7E5FF',
         },
-        civic: {
-          blue: '#0284c7',
-          amber: '#f59e0b',
-          coral: '#ef4444',
-          emerald: '#10b981',
-          slate: '#0f172a',
-          bg: '#f8fafc'
-        }
+        marigold: {
+          DEFAULT: '#FFB238',
+          deep: '#E0910D',
+          pale: '#FFF3D6',
+        },
+        coral: {
+          DEFAULT: '#FF5C5C',
+          pale: '#FFE3E1',
+        },
+        grass: {
+          DEFAULT: '#2FBF86',
+          pale: '#DFF7EC',
+          dark: '#08281C',
+        },
+        card: {
+          DEFAULT: '#FFFFFF',
+          marigold: '#FFF3D6',
+          grass: '#DFF7EC',
+          coral: '#FFE3E1',
+        },
+        line: '#E4E1F5',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Baloo 2"', 'Inter', 'sans-serif'],
       },
+      boxShadow: {
+        'neo': '6px 6px 0px rgba(28,27,46,0.9)',
+        'neo-sm': '4px 4px 0px rgba(28,27,46,0.9)',
+        'neo-xs': '2px 2px 0px rgba(28,27,46,0.9)',
+        'neo-lg': '8px 8px 0px rgba(28,27,46,0.9)',
+      },
+      borderRadius: {
+        'neo': '22px',
+        'neo-lg': '28px',
+      }
     },
   },
   plugins: [],

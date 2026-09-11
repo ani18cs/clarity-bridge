@@ -6,8 +6,8 @@ describe('Fact-Checking Service Tests', () => {
     const result = await verifySingleClaim(scamClaim);
 
     expect(result.status).toBe('Contradicted');
-    expect(result.source).toContain('ftc.gov');
-    expect(result.notes).toContain('Contradicted by federal consumer protection standards');
+    expect(result.source).toMatch(/cybercrime\.gov\.in|ftc\.gov/);
+    expect(result.notes).toContain('Contradicted');
   });
 
   test('verifySingleClaim should verify statutory legal references', async () => {

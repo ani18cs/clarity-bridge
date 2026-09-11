@@ -11,6 +11,9 @@ const analyzeRouter = require('./routes/analyze');
 const pdfRouter = require('./routes/pdf');
 const speechRouter = require('./routes/speech');
 const historyRouter = require('./routes/history');
+const shareRouter = require('./routes/share');
+const communityScamRouter = require('./routes/communityScam');
+const translateRouter = require('./routes/translate');
 
 const app = express();
 
@@ -56,9 +59,12 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/analyze', analyzeRouter);
+app.use('/api/translate', translateRouter);
 app.use('/api/pdf', pdfRouter);
 app.use('/api/speech', speechRouter);
 app.use('/api/history', historyRouter);
+app.use('/api/share', shareRouter);
+app.use('/api/community-scam', communityScamRouter);
 
 // Serve Frontend Static Files in Production (Container / Cloud Run)
 const publicDir = path.join(__dirname, '../public');

@@ -81,6 +81,26 @@ describe('Full REST API Integration Tests', () => {
     expect(Array.isArray(res.body.data)).toBe(true);
   });
 
+  test('Authorization: a user cannot fetch another user submission by ID', async () => {
+    // 1. User Alice creates a submission
+    const aliceRes = await request(app)
+      .post('/api/analyze')
+      .set('x-guest-id', 'user_alice_999')
+      .send({ text: 'Private Alice Notice Document with sensitive data.' });
+
+    expect(aliceRes.status).toBe(200);
+    const aliceDocId = aliceRes.body.data.id;
+
+    // 2. User Bob attempts to access Alice's submission by ID
+    const bobRes = await request(app)
+      .get(`/api/history/${aliceDocId}`)
+      .set('x-guest-id', 'user_bob_888');
+
+    // Should return 404 Not Found (object-level authorization isolation)
+    expect(bobRes.status).toBe(404);
+    expect(bobRes.body.success).toBe(false);
+  });
+
   test('POST /api/speech/synthesize accepts text and returns audio response', async () => {
     const res = await request(app)
       .post('/api/speech/synthesize')

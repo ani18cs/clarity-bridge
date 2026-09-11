@@ -84,10 +84,20 @@ async function synthesizeSpeech(text, languageCode = 'en-US') {
   }
 
   try {
+    // Normalize language codes for Google Cloud TTS
+    let targetLang = languageCode || 'en-US';
+    if (targetLang === 'hi') targetLang = 'hi-IN';
+    else if (targetLang === 'ta') targetLang = 'ta-IN';
+    else if (targetLang === 'te') targetLang = 'te-IN';
+    else if (targetLang === 'kn') targetLang = 'kn-IN';
+    else if (targetLang === 'bn') targetLang = 'bn-IN';
+    else if (targetLang === 'mr') targetLang = 'mr-IN';
+    else if (targetLang === 'en') targetLang = 'en-IN';
+
     const request = {
       input: { text },
       voice: {
-        languageCode,
+        languageCode: targetLang,
         ssmlGender: 'NEUTRAL',
       },
       audioConfig: {

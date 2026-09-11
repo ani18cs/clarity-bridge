@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
+import SharedResult from './pages/SharedResult';
+import Footer from './components/Footer';
 import HistoryDrawer from './components/HistoryDrawer';
 import AuthModal from './components/AuthModal';
 import { useAuth } from './hooks/useAuth';
@@ -20,6 +22,32 @@ export default function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [historyItems, setHistoryItems] = useState([]);
   const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [activeShareId, setActiveShareId] = useState(null);
+
+  // Check URL pathname for shared results (/shared/:shareId or ?share=...)
+  useEffect(() => {
+    const path = window.location.pathname;
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    if (path.startsWith('/shared/')) {
+      const id = path.replace('/shared/', '').trim();
+      if (id) setActiveShareId(id);
+    } else if (searchParams.get('share')) {
+      setActiveShareId(searchParams.get('share'));
+    }
+
+    const handlePopState = () => {
+      const p = window.location.pathname;
+      if (p.startsWith('/shared/')) {
+        setActiveShareId(p.replace('/shared/', '').trim());
+      } else {
+        setActiveShareId(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Load history from backend
   const fetchHistory = async () => {
@@ -41,8 +69,26 @@ export default function App() {
     setHistoryItems(prev => [newSubmission, ...prev.filter(item => item.id !== newSubmission.id)]);
   };
 
+  const handleScanClick = () => {
+    if (activeShareId) {
+      window.history.pushState({}, '', '/');
+      setActiveShareId(null);
+    }
+    setTimeout(() => {
+      const el = document.getElementById('demo');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
+  };
+
+  const handleGoHome = () => {
+    window.history.pushState({}, '', '/');
+    setActiveShareId(null);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-900">
+    <div className="min-h-screen flex flex-col bg-bg font-sans text-ink selection:bg-periwinkle-pale selection:text-periwinkle-deep">
       
       {/* Top Navigation */}
       <Navbar
@@ -53,24 +99,28 @@ export default function App() {
         historyCount={historyItems.length}
         currentLanguage={currentLanguage}
         onLanguageChange={setCurrentLanguage}
+        onScanClick={handleScanClick}
       />
 
       {/* Main Content Area */}
       <div className="flex-1">
-        <Home
-          currentLanguage={currentLanguage}
-          onLanguageChange={setCurrentLanguage}
-          onSubmissionCompleted={handleSubmissionCompleted}
-        />
+        {activeShareId ? (
+          <SharedResult 
+            shareId={activeShareId} 
+            onHomeClick={handleGoHome} 
+          />
+        ) : (
+          <Home
+            user={user}
+            currentLanguage={currentLanguage}
+            onLanguageChange={setCurrentLanguage}
+            onSubmissionCompleted={handleSubmissionCompleted}
+          />
+        )}
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200/80 bg-white py-6 mt-12">
-        <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
-          <p className="font-semibold text-slate-700">ClarityBridge — Universal Citizen Document Understanding & Action Planning</p>
-          <p>Powered by Google Gemini 2.5 • Vertex AI • Speech-to-Text • Cloud Run • Firestore</p>
-        </div>
-      </footer>
+      {/* Site Footer */}
+      <Footer />
 
       {/* History Slide-Out Drawer */}
       <HistoryDrawer

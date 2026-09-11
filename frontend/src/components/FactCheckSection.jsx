@@ -1,33 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  CheckCircle, 
-  HelpCircle, 
-  XCircle, 
-  ChevronDown, 
-  ChevronUp, 
-  ExternalLink, 
-  Search 
-} from 'lucide-react';
+import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 
-const STATUS_CONFIG = {
-  Verified: {
-    icon: CheckCircle,
-    label: 'Verified Claim',
-    tag: 'bg-emerald-100 text-emerald-900 border-emerald-300',
-    iconColor: 'text-emerald-600'
-  },
-  Contradicted: {
-    icon: XCircle,
-    label: 'Contradicted Claim',
-    tag: 'bg-red-100 text-red-900 border-red-300',
-    iconColor: 'text-red-600'
-  },
-  Unverifiable: {
-    icon: HelpCircle,
-    label: 'Unverifiable / Case-Specific',
-    tag: 'bg-blue-100 text-blue-900 border-blue-300',
-    iconColor: 'text-blue-600'
+const safeText = (val) => {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'object') {
+    return val.value || val.source_text || JSON.stringify(val);
   }
+  return String(val);
 };
 
 export default function FactCheckSection({ factChecks = [] }) {
@@ -35,54 +14,70 @@ export default function FactCheckSection({ factChecks = [] }) {
 
   if (!factChecks || factChecks.length === 0) return null;
 
+  const getBubbleStyle = (status) => {
+    switch ((status || '').toLowerCase()) {
+      case 'verified':
+        return {
+          bg: 'bg-card-grass',
+          border: 'border-ink',
+          tagText: 'text-[#0d7a4d]',
+          tagLabel: '✔ Verified —'
+        };
+      case 'contradicted':
+        return {
+          bg: 'bg-card-coral',
+          border: 'border-ink',
+          tagText: 'text-[#c23b3b]',
+          tagLabel: '✘ Contradicted —'
+        };
+      default:
+        return {
+          bg: 'bg-card-marigold',
+          border: 'border-ink',
+          tagText: 'text-[#a8720b]',
+          tagLabel: '? Unverifiable —'
+        };
+    }
+  };
+
   return (
-    <section 
-      aria-labelledby="fact-check-title"
-      className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
-    >
-      {/* Accordion Toggle Header */}
+    <section aria-labelledby="factcheck-heading" className="bg-white rounded-neo border-3 border-ink shadow-neo overflow-hidden">
+      
+      {/* Header Toggle */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-slate-50/70 transition-colors focus-visible:ring-2 focus-visible:ring-brand-600"
+        className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-periwinkle-pale/40 transition-colors"
         aria-expanded={isOpen}
       >
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center">
-            <Search className="w-5 h-5" aria-hidden="true" />
-          </div>
-          <div>
-            <h3 id="fact-check-title" className="text-lg font-bold text-slate-900">
-              Claim Fact-Check Annotations ({factChecks.length})
-            </h3>
-            <p className="text-xs text-slate-500">
-              Cross-referenced via Google Search Grounding and Public Legal Repositories
-            </p>
-          </div>
+        <div>
+          <h3 id="factcheck-heading" className="font-display font-extrabold text-xl sm:text-2xl text-ink">
+            Fact-Check Annotations ({factChecks.length})
+          </h3>
+          <p className="text-xs sm:text-sm text-[#454264] font-medium mt-0.5">
+            Cross-referenced against public records, institutional directories, and statutory registries.
+          </p>
         </div>
 
-        <div className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
-          {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+        <div className="w-8 h-8 rounded-full border-2 border-ink flex items-center justify-center bg-white shadow-neo-xs">
+          {isOpen ? <ChevronUp className="w-4 h-4 text-ink" /> : <ChevronDown className="w-4 h-4 text-ink" />}
         </div>
       </button>
 
-      {/* Accordion Content */}
+      {/* Bubble List */}
       {isOpen && (
-        <div className="px-5 sm:px-6 pb-6 pt-2 border-t border-slate-100 space-y-3">
+        <div className="px-5 sm:px-6 pb-6 pt-2 border-t-2 border-ink/10 space-y-3">
           {factChecks.map((item, idx) => {
-            const status = item.status || 'Unverifiable';
-            const config = STATUS_CONFIG[status] || STATUS_CONFIG.Unverifiable;
-            const Icon = config.icon;
+            const style = getBubbleStyle(item.status);
 
             return (
               <div
                 key={idx}
-                className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2 text-xs sm:text-sm"
+                className={`factcheck-bubble ${style.bg} ${style.border} space-y-1.5`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${config.tag}`}>
-                    <Icon className={`w-3.5 h-3.5 ${config.iconColor}`} aria-hidden="true" />
-                    <span>{config.label.toUpperCase()}</span>
+                  <span className={`font-black text-xs uppercase tracking-wider ${style.tagText}`}>
+                    {style.tagLabel}
                   </span>
 
                   {item.source && (
@@ -90,21 +85,21 @@ export default function FactCheckSection({ factChecks = [] }) {
                       href={item.source}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center space-x-1 text-xs font-semibold text-brand-700 hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-periwinkle-deep hover:underline"
                     >
-                      <span>View Corroborating Source</span>
+                      <span>Source Link</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                 </div>
 
-                <div className="font-semibold text-slate-900 text-sm">
-                  "{item.claim}"
+                <div className="font-bold text-ink text-sm sm:text-base">
+                  "{safeText(item.claim)}"
                 </div>
 
                 {item.notes && (
-                  <p className="text-slate-600 leading-relaxed">
-                    {item.notes}
+                  <p className="text-xs sm:text-sm text-[#3a3752] font-medium leading-relaxed">
+                    {safeText(item.notes)}
                   </p>
                 )}
               </div>

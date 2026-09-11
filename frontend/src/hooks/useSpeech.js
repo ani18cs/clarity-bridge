@@ -72,7 +72,15 @@ export function useSpeech() {
 
     try {
       // 1. Attempt Cloud TTS via backend
-      const langCode = language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'hi' ? 'hi-IN' : 'en-US';
+      let langCode = 'en-US';
+      if (language === 'hi') langCode = 'hi-IN';
+      else if (language === 'ta') langCode = 'ta-IN';
+      else if (language === 'te') langCode = 'te-IN';
+      else if (language === 'kn') langCode = 'kn-IN';
+      else if (language === 'bn') langCode = 'bn-IN';
+      else if (language === 'mr') langCode = 'mr-IN';
+      else if (language === 'en') langCode = 'en-IN';
+      
       const res = await api.post('/speech/synthesize', {
         text: text.substring(0, 500), // Clean limit
         languageCode: langCode
@@ -106,7 +114,16 @@ export function useSpeech() {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 0.95;
       utterance.pitch = 1.0;
-      utterance.lang = lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : lang === 'hi' ? 'hi-IN' : 'en-US';
+      
+      let browserLang = 'en-US';
+      if (lang === 'hi') browserLang = 'hi-IN';
+      else if (lang === 'ta') browserLang = 'ta-IN';
+      else if (lang === 'te') browserLang = 'te-IN';
+      else if (lang === 'kn') browserLang = 'kn-IN';
+      else if (lang === 'bn') browserLang = 'bn-IN';
+      else if (lang === 'mr') browserLang = 'mr-IN';
+      else if (lang === 'en') browserLang = 'en-IN';
+      utterance.lang = browserLang;
       
       utterance.onstart = () => setIsPlaying(true);
       utterance.onend = () => setIsPlaying(false);

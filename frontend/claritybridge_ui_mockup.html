@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClarityBridge — UI Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1C1B2E;
+    --bg:#F5F3FF;
+    --periwinkle:#5B5FEF;
+    --periwinkle-deep:#3A3DB0;
+    --periwinkle-pale:#E7E5FF;
+    --marigold:#FFB238;
+    --marigold-deep:#E0910D;
+    --coral:#FF5C5C;
+    --grass:#2FBF86;
+    --card:#FFFFFF;
+    --card-marigold:#FFF3D6;
+    --card-grass:#DFF7EC;
+    --card-coral:#FFE3E1;
+    --line:#E4E1F5;
+    --shadow: 6px 6px 0px rgba(28,27,46,0.9);
+    --shadow-sm: 4px 4px 0px rgba(28,27,46,0.9);
+    --radius: 22px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height:1.5;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* ---------- background doodle pattern ---------- */
+  .doodle-field{
+    position:absolute;
+    top:0; left:0; right:0; height:640px;
+    z-index:0;
+    pointer-events:none;
+    opacity:0.5;
+  }
+  .doodle{ position:absolute; color:var(--periwinkle-deep); opacity:0.16; }
+
+  a{ color:inherit; }
+
+  /* ---------- layout shells ---------- */
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 24px; position:relative; z-index:1; }
+
+  header.site{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 0;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Baloo 2', sans-serif; font-weight:800; font-size:1.4rem;
+    text-decoration:none; color:var(--ink);
+  }
+  .logo-mark{
+    width:38px; height:38px; border-radius:12px;
+    background:var(--periwinkle);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: var(--shadow-sm);
+    transform:rotate(-6deg);
+  }
+  nav.site-nav{ display:flex; gap:26px; font-weight:600; font-size:0.95rem; }
+  nav.site-nav a{ text-decoration:none; padding:6px 2px; border-bottom:2px solid transparent; }
+  nav.site-nav a:hover, nav.site-nav a:focus-visible{ border-bottom-color: var(--marigold); }
+
+  .btn{
+    font-family:'Inter', sans-serif;
+    font-weight:700;
+    border-radius: 999px;
+    border: 2.5px solid var(--ink);
+    padding: 13px 24px;
+    cursor:pointer;
+    font-size:0.95rem;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition: transform 0.15s ease;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn:hover{ transform: translate(-2px,-2px); }
+  .btn:active{ transform: translate(0,0); box-shadow:none; }
+  .btn:focus-visible{ outline:3px solid var(--marigold-deep); outline-offset:2px; }
+  .btn-primary{ background:var(--periwinkle); color:#fff; }
+  .btn-marigold{ background:var(--marigold); color:var(--ink); }
+  .btn-grass{ background:var(--grass); color:#08281c; }
+  .btn-ghost{ background:#fff; color:var(--ink); }
+  .btn-coral{ background:var(--coral); color:#fff; }
+  .btn-sm{ padding:9px 16px; font-size:0.85rem; box-shadow:none; border-width:2px; }
+
+  /* ---------- hero ---------- */
+  .hero{ padding: 40px 0 20px; position:relative; }
+  .hero-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--card-marigold); border:2px solid var(--ink);
+    border-radius:999px; padding:6px 14px; font-weight:700; font-size:0.82rem;
+    margin-bottom:22px;
+  }
+  .hero h1{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size: clamp(2.3rem, 5vw, 3.6rem);
+    line-height:1.05;
+    margin:0 0 18px;
+    max-width: 14ch;
+  }
+  .hero h1 .underline{
+    position:relative; white-space:nowrap;
+  }
+  .hero h1 .underline svg{ position:absolute; left:0; bottom:-6px; width:100%; height:14px; }
+  .hero p.sub{
+    font-size:1.15rem; max-width:46ch; color:#454264; margin:0 0 30px;
+  }
+  .hero-actions{ display:flex; flex-wrap:wrap; gap:14px; margin-bottom:56px; }
+
+  /* bridge illustration */
+  .bridge-scene{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:18px; position:relative; padding-bottom:8px;
+  }
+  .shore{
+    flex:1; min-width:150px;
+    border-radius: var(--radius);
+    border:3px solid var(--ink);
+    padding:20px;
+    box-shadow: var(--shadow);
+  }
+  .shore.messy{ background:var(--card-coral); transform:rotate(-1.4deg); }
+  .shore.clear{ background:var(--card-grass); transform:rotate(1.2deg); }
+  .shore h3{ font-family:'Baloo 2', sans-serif; margin:0 0 6px; font-size:1.15rem; }
+  .shore p{ margin:0; font-size:0.9rem; color:#3a3752; }
+  .shore .emoji-row{ font-size:1.6rem; margin-bottom:10px; letter-spacing:6px; }
+
+  .bridge-path{ flex:1.4; min-width:220px; align-self:center; }
+  .bridge-path svg{ width:100%; height:auto; display:block; }
+  .moving-dot{
+    animation: travel 3.2s ease-in-out infinite;
+  }
+  @keyframes travel{
+    0%{ offset-distance: 0%; }
+    50%{ offset-distance: 100%; }
+    100%{ offset-distance: 0%; }
+  }
+
+  /* ---------- section headings ---------- */
+  .section{ padding: 64px 0; position:relative; }
+  .section-head{ max-width:640px; margin:0 auto 40px; text-align:center; }
+  .section-head h2{
+    font-family:'Baloo 2', sans-serif; font-weight:800; font-size:clamp(1.8rem,3.4vw,2.4rem);
+    margin:0 0 12px;
+  }
+  .section-head p{ color:#454264; font-size:1.05rem; margin:0; }
+
+  /* ---------- app demo card ---------- */
+  .app-card{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .app-topbar{
+    display:flex; align-items:center; gap:8px;
+    padding:14px 20px; border-bottom:3px solid var(--ink);
+    background:var(--periwinkle-pale);
+  }
+  .app-topbar .dot{ width:12px; height:12px; border-radius:50%; border:2px solid var(--ink); }
+  .app-topbar .dot:nth-child(1){ background:var(--coral); }
+  .app-topbar .dot:nth-child(2){ background:var(--marigold); }
+  .app-topbar .dot:nth-child(3){ background:var(--grass); }
+  .app-topbar span.title{ margin-left:8px; font-weight:700; font-size:0.85rem; }
+
+  .app-body{ padding: 34px; min-height: 420px; }
+
+  /* input screen */
+  .input-grid{ display:grid; grid-template-columns: repeat(2,1fr); gap:16px; margin-top:22px; }
+  @media (max-width:640px){ .input-grid{ grid-template-columns:1fr; } }
+  .input-tile{
+    border:2.5px dashed var(--ink);
+    border-radius:18px;
+    padding:20px;
+    text-align:center;
+    background:#fff;
+    cursor:pointer;
+    font-weight:700;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .input-tile:hover, .input-tile:focus-visible{ background:var(--periwinkle-pale); transform: translateY(-2px); }
+  .input-tile .ico{ font-size:1.8rem; display:block; margin-bottom:8px; }
+
+  .drop-zone{
+    border:3px dashed var(--periwinkle-deep);
+    background: var(--periwinkle-pale);
+    border-radius:20px;
+    padding:34px 20px;
+    text-align:center;
+    margin-top:6px;
+  }
+  .drop-zone p{ margin:6px 0 0; font-weight:600; color:var(--periwinkle-deep); }
+
+  /* processing screen */
+  .processing-wrap{ text-align:center; padding: 50px 10px; }
+  .bounce-icon{
+    width:74px; height:74px; margin:0 auto 22px;
+    border-radius:50%;
+    background:var(--marigold);
+    border:3px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-size:2rem;
+    animation: bounce 1.1s ease-in-out infinite;
+  }
+  @keyframes bounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-14px); } }
+  .status-line{ font-weight:700; font-size:1.1rem; min-height:1.6em; }
+  .progress-track{
+    width:100%; max-width:340px; margin:22px auto 0;
+    height:14px; border-radius:999px; border:2px solid var(--ink);
+    background:#fff; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; width:12%; background:var(--periwinkle);
+    border-radius:999px 0 0 999px;
+    transition: width 0.4s ease;
+  }
+
+  /* results screen */
+  .verdict-row{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:22px; }
+  .stamp{
+    width:96px; height:96px; border-radius:50%;
+    border:4px double var(--ink);
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    text-align:center; transform:rotate(-8deg);
+    background:var(--card-marigold);
+    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:0.72rem; line-height:1.15;
+    padding:4px;
+    flex-shrink:0;
+  }
+  .verdict-copy h3{ font-family:'Baloo 2', sans-serif; margin:0 0 4px; font-size:1.3rem; }
+  .verdict-copy p{ margin:0; color:#454264; }
+
+  .steps-list{ list-style:none; margin:0 0 26px; padding:0; display:flex; flex-direction:column; gap:12px; }
+  .steps-list li{
+    display:flex; gap:14px; align-items:flex-start;
+    background:#fff; border:2px solid var(--ink); border-radius:16px;
+    padding:14px 16px;
+    position:relative;
+  }
+  .steps-list li::before{
+    content:''; position:absolute; left:-9px; top:50%; transform:translateY(-50%);
+    width:14px; height:14px; border-radius:50%; background:var(--bg); border:2px solid var(--ink);
+  }
+  .badge{
+    flex-shrink:0; font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:999px;
+    border:2px solid var(--ink); white-space:nowrap; height:fit-content;
+  }
+  .badge.urgent{ background:var(--coral); color:#fff; }
+  .badge.soon{ background:var(--marigold); color:var(--ink); }
+  .badge.low{ background:var(--grass); color:#08281c; }
+  .step-text strong{ display:block; margin-bottom:2px; }
+  .step-text span{ font-size:0.88rem; color:#454264; }
+
+  .factcheck-wrap{ margin-bottom:26px; }
+  .factcheck-wrap h4{ font-family:'Baloo 2', sans-serif; margin:0 0 12px; font-size:1.05rem; }
+  .bubble{
+    background:var(--periwinkle-pale); border:2px solid var(--periwinkle-deep);
+    border-radius: 16px 16px 16px 4px;
+    padding:12px 16px; margin-bottom:10px; font-size:0.92rem;
+  }
+  .bubble .tag{ font-weight:800; font-size:0.75rem; }
+  .bubble.verified .tag{ color:#0d7a4d; }
+  .bubble.unverifiable .tag{ color:#a8720b; }
+  .bubble.contradicted .tag{ color:#c23b3b; }
+
+  .result-actions{ display:flex; flex-wrap:wrap; gap:12px; }
+
+  .disclaimer{
+    margin-top:26px; font-size:0.82rem; color:#5b5878;
+    background:#fff; border:1.5px dashed var(--line); border-radius:14px; padding:12px 16px;
+  }
+
+  /* screen switch pills */
+  .screen-tabs{ display:flex; gap:10px; justify-content:center; margin-bottom:26px; flex-wrap:wrap; }
+  .screen-tabs button{
+    font-family:'Inter'; font-weight:700; font-size:0.85rem;
+    padding:9px 18px; border-radius:999px; border:2px solid var(--ink);
+    background:#fff; cursor:pointer;
+  }
+  .screen-tabs button[aria-selected="true"]{ background:var(--ink); color:#fff; }
+  .screen-tabs button:focus-visible{ outline:3px solid var(--marigold-deep); outline-offset:2px; }
+
+  .screen{ display:none; }
+  .screen.active{ display:block; }
+
+  /* feature grid */
+  .feature-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  @media (max-width:820px){ .feature-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:560px){ .feature-grid{ grid-template-columns:1fr; } }
+  .feature-card{
+    border:2.5px solid var(--ink); border-radius:20px; padding:22px;
+    box-shadow: var(--shadow-sm);
+    background:#fff;
+  }
+  .feature-card:nth-child(2){ background:var(--card-marigold); }
+  .feature-card:nth-child(3){ background:var(--card-grass); }
+  .feature-card:nth-child(4){ background:var(--card-coral); }
+  .feature-card:nth-child(5){ background:var(--periwinkle-pale); }
+  .feature-card .ico{
+    width:46px; height:46px; border-radius:12px; background:var(--ink); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:1.35rem; margin-bottom:14px;
+  }
+  .feature-card h3{ font-family:'Baloo 2', sans-serif; margin:0 0 8px; font-size:1.08rem; }
+  .feature-card p{ margin:0; font-size:0.9rem; color:#3a3752; }
+
+  footer.site{
+    border-top:3px solid var(--ink); padding:32px 0 40px; margin-top:20px;
+    font-size:0.85rem; color:#454264; text-align:center;
+  }
+  footer.site strong{ color:var(--ink); }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+</style>
+</head>
+<body>
+
+<svg class="doodle-field" viewBox="0 0 1080 640" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+  <g class="doodle" transform="translate(60,40) rotate(-8)"><rect x="0" y="0" width="46" height="32" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M0 4 L23 22 L46 4" fill="none" stroke="currentColor" stroke-width="3"/></g>
+  <g class="doodle" transform="translate(900,90) rotate(10)"><circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="3"/><line x1="25" y1="25" x2="38" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></g>
+  <g class="doodle" transform="translate(180,220) rotate(6)"><path d="M2 18 L14 30 L34 4" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="doodle" transform="translate(760,260) rotate(-14)"><rect x="0" y="0" width="34" height="34" rx="17" fill="none" stroke="currentColor" stroke-width="3"/><text x="17" y="23" font-size="20" text-anchor="middle" fill="currentColor" font-family="Baloo 2">!</text></g>
+  <g class="doodle" transform="translate(980,420) rotate(-4)"><rect x="0" y="0" width="46" height="32" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M0 4 L23 22 L46 4" fill="none" stroke="currentColor" stroke-width="3"/></g>
+  <g class="doodle" transform="translate(40,470) rotate(12)"><circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="3"/><line x1="25" y1="25" x2="38" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></g>
+  <g class="doodle" transform="translate(500,60) rotate(4)"><path d="M2 18 L14 30 L34 4" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>
+
+<div class="wrap">
+
+  <header class="site">
+    <a class="logo" href="#top">
+      <span class="logo-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 17c2-4 6-6 9-6s7 2 9 6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M3 17v3M21 17v3" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </span>
+      ClarityBridge
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#how">How it works</a>
+      <a href="#demo">Try the demo</a>
+    </nav>
+    <a href="#demo" class="btn btn-primary">Scan a document</a>
+  </header>
+
+  <section class="hero" id="top">
+    <p class="hero-tag">✨ No lawyer required</p>
+    <h1>Confusing letter?<br>Let's <span class="underline">cross that bridge<svg viewBox="0 0 300 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2 10 Q75 2 150 8 T298 6" fill="none" stroke="var(--marigold)" stroke-width="6" stroke-linecap="round"/></svg></span>.</h1>
+    <p class="sub">Snap a photo, paste a message, or just talk it out. ClarityBridge reads any official (or suspicious) document and hands you back plain steps you can actually trust.</p>
+    <div class="hero-actions">
+      <a href="#demo" class="btn btn-primary">📸 Try with a photo</a>
+      <a href="#demo" class="btn btn-marigold">🎙️ Try with your voice</a>
+    </div>
+
+    <div class="bridge-scene">
+      <div class="shore messy" role="group" aria-label="Before ClarityBridge">
+        <div class="emoji-row">📄😵💸</div>
+        <h3>Confusing</h3>
+        <p>Dense legal jargon, a scary deadline, and no idea if it's even real.</p>
+      </div>
+
+      <div class="bridge-path" aria-hidden="true">
+        <svg viewBox="0 0 240 90">
+          <path id="archPath" d="M10 80 Q120 -10 230 80" fill="none" stroke="var(--ink)" stroke-width="4" stroke-dasharray="1 12" stroke-linecap="round"/>
+          <circle r="7" fill="var(--periwinkle)" stroke="var(--ink)" stroke-width="2">
+            <animateMotion dur="3.2s" repeatCount="indefinite" path="M10 80 Q120 -10 230 80"/>
+          </circle>
+        </svg>
+      </div>
+
+      <div class="shore clear" role="group" aria-label="After ClarityBridge">
+        <div class="emoji-row">✅📅☎️</div>
+        <h3>Clear</h3>
+        <p>Three plain steps, a real deadline, and a verdict you can trust.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="section-head">
+      <h2>One bridge, every kind of document</h2>
+      <p>Government notices, eviction letters, benefit forms, suspicious texts — if it's confusing or official-looking, ClarityBridge can take a look.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="ico" aria-hidden="true">🗣️</div>
+        <h3>Any input, your way</h3>
+        <p>Photo, PDF, pasted text, or just describe it out loud — one pipeline handles all of it.</p>
+      </div>
+      <div class="feature-card">
+        <div class="ico" aria-hidden="true">🕵️</div>
+        <h3>Real or fake?</h3>
+        <p>Flags scam patterns, mismatched senders, and AI-generated red flags before you act on anything.</p>
+      </div>
+      <div class="feature-card">
+        <div class="ico" aria-hidden="true">🔎</div>
+        <h3>Fact-checked claims</h3>
+        <p>Amounts, deadlines, and cited authorities get checked against public sources — not just trusted blindly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="ico" aria-hidden="true">🗂️</div>
+        <h3>PDF you can keep</h3>
+        <p>Every action plan downloads as a clean PDF — bring it to the office, the call, or the courthouse.</p>
+      </div>
+      <div class="feature-card">
+        <div class="ico" aria-hidden="true">🔊</div>
+        <h3>Read aloud, any language</h3>
+        <p>Built for low-literacy and low-vision users first, from the ground up — not bolted on after.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="demo">
+    <div class="section-head">
+      <h2>See it in action</h2>
+      <p>A quick look at the three screens someone moves through — from a confusing photo to a plan they trust.</p>
+    </div>
+
+    <div class="screen-tabs" role="tablist" aria-label="Demo screens">
+      <button role="tab" aria-selected="true" id="tab-input" aria-controls="screen-input" onclick="showScreen('input')">1 · Upload</button>
+      <button role="tab" aria-selected="false" id="tab-processing" aria-controls="screen-processing" onclick="showScreen('processing')">2 · Reading it</button>
+      <button role="tab" aria-selected="false" id="tab-results" aria-controls="screen-results" onclick="showScreen('results')">3 · Your plan</button>
+    </div>
+
+    <div class="app-card">
+      <div class="app-topbar">
+        <span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span>
+        <span class="title">ClarityBridge — new submission</span>
+      </div>
+      <div class="app-body">
+
+        <div class="screen active" id="screen-input" role="tabpanel" aria-labelledby="tab-input">
+          <h3 style="font-family:'Baloo 2'; margin:0 0 6px; font-size:1.3rem;">What have you got?</h3>
+          <p style="margin:0; color:#454264;">Drop it in, snap it, or just talk — whatever's easiest.</p>
+          <div class="drop-zone">
+            <div style="font-size:2rem;" aria-hidden="true">📥</div>
+            <p>Drag a photo or PDF here, or choose an option below</p>
+          </div>
+          <div class="input-grid">
+            <button class="input-tile"><span class="ico" aria-hidden="true">📷</span>Take a photo</button>
+            <button class="input-tile"><span class="ico" aria-hidden="true">🎙️</span>Record my voice</button>
+            <button class="input-tile"><span class="ico" aria-hidden="true">📎</span>Upload a file</button>
+            <button class="input-tile"><span class="ico" aria-hidden="true">⌨️</span>Paste text</button>
+          </div>
+          <div style="margin-top:24px; text-align:right;">
+            <button class="btn btn-primary" onclick="runDemo()">Analyze it →</button>
+          </div>
+        </div>
+
+        <div class="screen" id="screen-processing" role="tabpanel" aria-labelledby="tab-processing">
+          <div class="processing-wrap">
+            <div class="bounce-icon" aria-hidden="true">🔍</div>
+            <p class="status-line" id="statusLine" aria-live="polite">Reading your document…</p>
+            <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          </div>
+        </div>
+
+        <div class="screen" id="screen-results" role="tabpanel" aria-labelledby="tab-results">
+          <div class="verdict-row">
+            <div class="stamp">USE<br>CAUTION</div>
+            <div class="verdict-copy">
+              <h3>This looks like a real notice — with one thing to double-check</h3>
+              <p>Issued by your city's Housing Authority. Contact number matches public records. One phrase used urgency language often seen in scam letters.</p>
+            </div>
+          </div>
+
+          <ul class="steps-list">
+            <li>
+              <span class="badge urgent">Due in 5 days</span>
+              <span class="step-text"><strong>Pay or respond by June 14</strong><span>Call the number below before the deadline — don't send payment by gift card or wire transfer.</span></span>
+            </li>
+            <li>
+              <span class="badge soon">This week</span>
+              <span class="step-text"><strong>Call Housing Authority directly</strong><span>(555) 019-2244 — verified against the official city directory, not just the letter.</span></span>
+            </li>
+            <li>
+              <span class="badge low">When you can</span>
+              <span class="step-text"><strong>Keep a copy of this letter</strong><span>Download the PDF summary below and store it with your records.</span></span>
+            </li>
+          </ul>
+
+          <div class="factcheck-wrap">
+            <h4>Fact-check</h4>
+            <div class="bubble verified"><span class="tag">✔ Verified —</span> Housing Authority is a real local agency at this address.</div>
+            <div class="bubble unverifiable"><span class="tag">? Unverifiable —</span> The exact fee amount isn't published publicly; confirm by phone.</div>
+            <div class="bubble contradicted"><span class="tag">✘ Contradicted —</span> "Immediate arrest" language does not match how this agency operates.</div>
+          </div>
+
+          <div class="result-actions">
+            <button class="btn btn-grass btn-sm">⬇️ Download PDF</button>
+            <button class="btn btn-marigold btn-sm">🔊 Read this aloud</button>
+            <button class="btn btn-ghost btn-sm" onclick="showScreen('input')">↺ Try another</button>
+          </div>
+
+          <p class="disclaimer">ClarityBridge helps you understand and act on documents — it's not a lawyer, accountant, or government agency. Verdicts and fact-checks are risk signals, not guarantees.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site">
+    <p><strong>ClarityBridge</strong> — built for PromptWars X. Every verdict is a starting point, not the final word.</p>
+  </footer>
+
+</div>
+
+<script>
+  function showScreen(name){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('[role="tab"]').forEach(t => t.setAttribute('aria-selected','false'));
+    document.getElementById('screen-' + name).classList.add('active');
+    document.getElementById('tab-' + name).setAttribute('aria-selected','true');
+  }
+
+  function runDemo(){
+    showScreen('processing');
+    const lines = ["Reading your document…", "Checking who really sent it…", "Verifying the facts…", "Writing your plain-language plan…"];
+    const statusEl = document.getElementById('statusLine');
+    const fillEl = document.getElementById('progressFill');
+    let i = 0;
+    statusEl.textContent = lines[0];
+    fillEl.style.width = '15%';
+    const interval = setInterval(() => {
+      i++;
+      if(i < lines.length){
+        statusEl.textContent = lines[i];
+        fillEl.style.width = (15 + i * 28) + '%';
+      } else {
+        clearInterval(interval);
+        setTimeout(() => showScreen('results'), 300);
+      }
+    }, 700);
+  }
+</script>
+
+</body>
+</html>

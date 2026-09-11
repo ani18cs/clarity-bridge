@@ -1,8 +1,8 @@
 const { evaluateAuthenticity } = require('../services/authenticity.service');
 
 describe('Authenticity & Fraud Evaluation Tests', () => {
-  test('Legitimate government document with official domain and consistent dates should be Verified', () => {
-    const result = evaluateAuthenticity({
+  test('Legitimate government document with official domain and consistent dates should be Verified', async () => {
+    const result = await evaluateAuthenticity({
       documentType: 'eviction_notice',
       issuingAuthorityClaimed: 'Municipal Housing Court',
       extractedFields: {
@@ -17,10 +17,11 @@ describe('Authenticity & Fraud Evaluation Tests', () => {
     expect(result.verdict).toBe('Verified');
     expect(result.confidence).toBeGreaterThan(0.7);
     expect(result.reasons.length).toBeGreaterThan(0);
+    expect(Array.isArray(result.itemizedSignals)).toBe(true);
   });
 
-  test('Claimed government agency with free public gmail address should trigger red flag', () => {
-    const result = evaluateAuthenticity({
+  test('Claimed government agency with free public gmail address should trigger red flag', async () => {
+    const result = await evaluateAuthenticity({
       documentType: 'tax_bill',
       issuingAuthorityClaimed: 'IRS Department of Revenue',
       extractedFields: {
@@ -34,8 +35,8 @@ describe('Authenticity & Fraud Evaluation Tests', () => {
     expect(result.reasons.some(r => r.includes('free public email'))).toBe(true);
   });
 
-  test('Document demanding payment via gift cards or crypto should be flagged Likely Fraudulent', () => {
-    const result = evaluateAuthenticity({
+  test('Document demanding payment via gift cards or crypto should be flagged Likely Fraudulent', async () => {
+    const result = await evaluateAuthenticity({
       documentType: 'suspicious_solicitation',
       issuingAuthorityClaimed: 'Federal Police Department',
       extractedFields: {
@@ -49,8 +50,24 @@ describe('Authenticity & Fraud Evaluation Tests', () => {
     expect(result.reasons.some(r => r.includes('threats'))).toBe(true);
   });
 
-  test('Document with due date before notice date should flag inconsistent dates', () => {
-    const result = evaluateAuthenticity({
+  test('Document with ambiguous signals should be flagged Use Caution', async () => {
+    const result = await evaluateAuthenticity({
+      documentType: 'official_government_notice',
+      issuingAuthorityClaimed: 'State Department of Revenue',
+      extractedFields: {
+        noticeDate: '2026-09-01',
+        dueDate: '2026-09-15',
+        contactWebsite: 'https://state-tax-portal.com' // Non .gov domain for government claim
+      },
+      rawText: 'Dear citizen, please review your annual filing assessment.'
+    });
+
+    expect(result.verdict).toBe('Use Caution');
+    expect(result.reasons.length).toBeGreaterThan(0);
+  });
+
+  test('Document with due date before notice date should flag inconsistent dates', async () => {
+    const result = await evaluateAuthenticity({
       documentType: 'utility_shutoff',
       issuingAuthorityClaimed: 'City Power & Light',
       extractedFields: {

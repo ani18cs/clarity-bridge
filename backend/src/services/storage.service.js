@@ -18,8 +18,8 @@ try {
  * Upload file buffer to Google Cloud Storage
  */
 async function uploadFile({ buffer, destination, mimeType = 'application/octet-stream' }) {
-  if (!bucket || !buffer) {
-    // In local development or when bucket is unconfigured, return a mock storage reference
+  if (process.env.NODE_ENV === 'test' || !bucket || !buffer) {
+    // In test mode, local development, or when bucket is unconfigured, return a mock storage reference
     return {
       storagePath: `local://${destination}`,
       publicUrl: `/api/files/${destination}`,
