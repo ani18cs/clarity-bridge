@@ -1,0 +1,36 @@
+steps:
+  # 1. Build the unified production container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/clarity-bridge:$COMMIT_SHA', '-t', 'gcr.io/$PROJECT_ID/clarity-bridge:latest', '.']
+
+  # 2. Push the container image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/clarity-bridge:$COMMIT_SHA']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/clarity-bridge:latest']
+
+  # 3. Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'clarity-bridge'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/clarity-bridge:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,GCP_PROJECT_ID=$PROJECT_ID'
+      - '--set-secrets'
+      - 'GEMINI_API_KEY=GEMINI_API_KEY:latest'
+
+images:
+  - 'gcr.io/$PROJECT_ID/clarity-bridge:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/clarity-bridge:latest'
+
+timeout: '1200s'

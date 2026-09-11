@@ -1,0 +1,25 @@
+{
+  "name": "clarity-bridge",
+  "version": "1.0.0",
+  "description": "A Gemini-powered civic-tech web application translating complex documents into clear, verified human action.",
+  "main": "backend/src/index.js",
+  "scripts": {
+    "install:all": "npm.cmd --prefix backend install && npm.cmd --prefix frontend install",
+    "dev:backend": "npm.cmd --prefix backend run dev",
+    "dev:frontend": "npm.cmd --prefix frontend run dev",
+    "test": "npm.cmd --prefix backend test",
+    "build:frontend": "npm.cmd --prefix frontend run build",
+    "start": "npm.cmd --prefix backend start"
+  },
+  "keywords": [
+    "clarity-bridge",
+    "gemini",
+    "vertex-ai",
+    "civic-tech",
+    "accessibility",
+    "fraud-detection",
+    "fact-check"
+  ],
+  "author": "ClarityBridge Team",
+  "license": "MIT"
+}
