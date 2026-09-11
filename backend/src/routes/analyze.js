@@ -31,6 +31,12 @@ const analyzeLimiter = rateLimit({
 /**
  * POST /api/analyze
  * Main entry point for analyzing documents, audio, or text
+ * Optimized with concurrent promise pipelining for maximum throughput and minimal latency.
+ *
+ * @route POST /api/analyze
+ * @param {express.Request} req
+ * @param {express.Response} res
+ * @param {express.NextFunction} next
  */
 router.post('/', optionalAuth, analyzeLimiter, uploadFields, async (req, res, next) => {
   const startTime = Date.now();
@@ -78,27 +84,29 @@ router.post('/', optionalAuth, analyzeLimiter, uploadFields, async (req, res, ne
       .filter(Boolean)
       .join('\n\n');
 
-    // 2. Upload raw file to Cloud Storage (if file provided)
-    let rawFileStorage = null;
-    if (docFile) {
-      const destination = `uploads/${userId}/${Date.now()}_${docFile.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      rawFileStorage = await uploadFile({
-        buffer: docFile.buffer,
-        destination,
-        mimeType: docFile.mimetype
-      });
-    }
+    // 2 & 3. Concurrent Execution: Upload to GCS and Gemini Multimodal Analysis in Parallel
+    const storagePromise = docFile
+      ? uploadFile({
+          buffer: docFile.buffer,
+          destination: `uploads/${userId}/${Date.now()}_${docFile.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`,
+          mimeType: docFile.mimetype
+        }).catch((err) => {
+          logger.warn('Non-blocking GCS upload error', { error: err.message });
+          return null;
+        })
+      : Promise.resolve(null);
 
-    // 3. Gemini Multimodal Extraction & Understanding
-    const geminiResult = await analyzeDocument({
+    const geminiPromise = analyzeDocument({
       fileBuffer: docFile?.buffer || null,
       mimeType: docFile?.mimetype || null,
       textContent: combinedText || null,
       language
     });
 
-    // 4. Authenticity & Fraud Risk Evaluation
-    const authenticity = await evaluateAuthenticity({
+    const [rawFileStorage, geminiResult] = await Promise.all([storagePromise, geminiPromise]);
+
+    // 4 & 5. Concurrent Execution: Authenticity Evaluation and Fact-Checking in Parallel
+    const authenticityPromise = evaluateAuthenticity({
       extractedFields: geminiResult.extractedFields || {},
       documentType: geminiResult.documentType || 'general_letter',
       issuingAuthorityClaimed: geminiResult.issuingAuthorityClaimed || '',
@@ -106,11 +114,12 @@ router.post('/', optionalAuth, analyzeLimiter, uploadFields, async (req, res, ne
       aiLinguisticSignal: geminiResult.aiLinguisticSignal || {}
     });
 
-    // 5. Fact-Checking Layer
-    const factChecks = await verifyClaims(
+    const factCheckPromise = verifyClaims(
       geminiResult.claimsToCheck || [],
       { authority: geminiResult.issuingAuthorityClaimed }
     );
+
+    const [authenticity, factChecks] = await Promise.all([authenticityPromise, factCheckPromise]);
 
     // 6. Assemble Final Consolidated Output
     const submissionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
@@ -140,8 +149,10 @@ router.post('/', optionalAuth, analyzeLimiter, uploadFields, async (req, res, ne
       finalPayload = translateAnalysisData(resultPayload, language);
     }
 
-    // 7. Persist to Firestore
-    await saveSubmission(userId, finalPayload);
+    // 7. Persist to Firestore (Non-blocking background save)
+    saveSubmission(userId, finalPayload).catch((err) => {
+      logger.warn('Non-blocking Firestore save warning', { error: err.message });
+    });
 
     logger.pipelineStage('Pipeline_Completed_Success', {
       submissionId,
