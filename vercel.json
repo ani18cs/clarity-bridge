@@ -1,15 +1,25 @@
 {
   "version": 2,
-  "buildCommand": "npm run build --prefix frontend && npm install --prefix backend",
+  "buildCommand": "cd frontend && npm install && npm run build && cd ../backend && npm install",
   "outputDirectory": "frontend/dist",
-  "rewrites": [
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "backend/**",
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
